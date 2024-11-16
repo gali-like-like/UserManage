@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.UserMapper">
+    <sql id="conditionSQL">
+        <where>
+            <if test="name != null">
+                name like #{name}
+            </if>
+            <if test="username != null">
+                and username = #{username}
+            </if>
+            <if test="phone != null">
+                and phone = #{phone}
+            </if>
+            <if test="begin != null and end != null">
+                and create_time between #{begin} and #{end}
+            </if>
+            and is_delete = 0 and user_role = 1
+        </where>
+    </sql>
+    <update id="save">
+        update users
+        <set>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="description != null" >
+                description = #{description},
+            </if>
+            <if test="name != null">
+                name = #{name}
+            </if>
+            <where>
+                username = #{username}
+            </where>
+        </set>
+    </update>
+    <update id="resetPasswordByUsername">
+        update users set password = sha2("123456",256)
+            <where>
+                <if test="username != null">
+                    username = #{username}
+                </if>
+            </where>
+    </update>
+    <update id="deleteBatchUsers">
+        update users set is_delete = 1
+        <where>
+            username in
+            <if test="usernames != null">
+                <!--foreach相当于将list的内容转成(1,2,3)这种类型-->
+                <foreach item="username" collection="usernames" close=")" open="(" separator=",">
+                    #{username}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <update id="resetBatchUsers">
+        update users set password = sha2("123456",256)
+        <where>
+            username in
+            <if test="usernames != null">
+                <foreach item="username" collection="usernames" close=")" open="(" separator=",">
+                    #{username}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+
+    <select id="totalByCondition" resultType="java.lang.Integer">
+        select count(1) from users
+        <include refid="conditionSQL" />
+    </select>
+
+    <select id="pageByCondition" resultType="org.example.entity.User">
+        select * from users
+        <include refid="conditionSQL"/>
+        limit #{page},#{pageSize}
+    </select>
+
+    <select id="getUserRoleByUsername" resultType="java.lang.Integer">
+        SELECT user_role.id FROM users JOIN user_role ON users.user_role = user_role.id WHERE users.username = #{username};
+    </select>
+
+</mapper>
