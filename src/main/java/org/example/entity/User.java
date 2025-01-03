@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.example.enums.UserRole;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 @Data
 @TableName("users")
@@ -20,6 +21,8 @@ public class User {
 
     private String phone;//手机号
 
+    private Boolean grender;//性别,true为男性,false为女性
+
     private Integer userRole;//用户角色
 
     private String name;//昵称
@@ -29,6 +32,8 @@ public class User {
     private String description;//个人简介
 
     private Boolean isDelete;//是否删除
+
+    private LocalDate birthDay;//生日
 
     private LocalDateTime deleteTime;//删除日期
 

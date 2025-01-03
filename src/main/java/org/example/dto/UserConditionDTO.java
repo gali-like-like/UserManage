@@ -20,6 +20,8 @@ public class UserConditionDTO {
 
     private String username;
 
+    private Boolean grender;//性别,true为男性,false为女性
+
     @PastOrPresent(message = "开始日期不能是未来的日期")
     private LocalDate begin;
 

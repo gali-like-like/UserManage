@@ -12,6 +12,9 @@
             <if test="phone != null">
                 and phone = #{phone}
             </if>
+            <if test="grender != null">
+                and phone = #{grender}
+            </if>
             <if test="begin != null and end != null">
                 and create_time between #{begin} and #{end}
             </if>
@@ -27,8 +30,14 @@
             <if test="password != null">
                 password = #{password},
             </if>
+            <if test="grender != null">
+                grender = #{grender},
+            </if>
             <if test="description != null" >
                 description = #{description},
+            </if>
+            <if test="birthDay != null">
+                birthDay = #{birthDay},
             </if>
             <if test="name != null">
                 name = #{name}

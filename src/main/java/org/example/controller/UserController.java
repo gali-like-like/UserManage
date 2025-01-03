@@ -40,7 +40,6 @@ public class UserController {
     /**
      * 员工的条件查询
      * 员工的分页查询
-     *
      * **/
 
     @Autowired
@@ -96,6 +95,7 @@ public class UserController {
     }
 
     @PostMapping("/add")
+    @Operation(summary = "添加用户")
     public Result add(@Validated @RequestBody User user) throws DataAccessException, NoSuchAlgorithmException {
         Integer index = userService.add(user);
         return Result.success(CommonMessage.REGEDIT_SUCCESS,index);

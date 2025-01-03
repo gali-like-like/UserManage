@@ -3,6 +3,7 @@ package org.example.service;
 import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.sun.tools.jconsole.JConsoleContext;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -142,33 +143,18 @@ public class UserService {
         queryWrapper.eq("phone",phone);
         return userMapper.selectOne(queryWrapper);
     }
-
+    @Transactional
     public Page<UserVo> getUsersByCondition(UserConditionDTO userConditionDTO) throws DataAccessException, ExecutionException, InterruptedException, TimeoutException {
         Page<UserVo> page = new Page<>(userConditionDTO.getPage(), userConditionDTO.getPageSize());
         userConditionDTO.setPage((userConditionDTO.getPage()-1)*userConditionDTO.getPageSize());
-        CompletableFuture<List<UserVo>> pageFuture = CompletableFuture.supplyAsync(() -> userMapper.pageByCondition(userConditionDTO))
-                .handle((res,e) -> {
-                    if (Objects.isNull(e)) {
-                        return res.stream().map(user -> userConversion.userVoFromUser(user)).collect(Collectors.toList());
-                    } else {
-                        log.error(e.getLocalizedMessage());
-                        return null;
-                    }
-                });
-        CompletableFuture<Integer> totalFuture = CompletableFuture.supplyAsync(() -> {
-            return userMapper.totalByCondition(userConditionDTO);
-        }).handle((res, e) -> {
-            if(Objects.isNull(e)) {
-                return res;
-            } else {
-                log.error(e.getLocalizedMessage());
-                return null;
-            }
-        });
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(totalFuture,pageFuture);
-        resultFuture.get(3, TimeUnit.SECONDS);
-        page.setRecords(pageFuture.get());
-        page.setTotal(totalFuture.get());
+        Integer userTotal = userMapper.totalByCondition(userConditionDTO);
+        List<User> users = userMapper.pageByCondition(userConditionDTO);
+        List<UserVo> userVos = users.stream().map((item) -> {
+            return userConversion.userVoFromUser(item);
+        }).collect(Collectors.toList());
+//      分别设置总记录数和当前记录详情
+        page.setTotal(userTotal);
+        page.setRecords(userVos);
         return page;
     }
 
@@ -236,7 +222,7 @@ public class UserService {
         this.add(user);
         return username;
     }
-
+//账号密码登录
     public String loginByUP(UserLoginByUPDTO userLoginByUPDTO) throws NoSuchAlgorithmException {
         String username = userLoginByUPDTO.getUsername();
         User user = this.getUserByUserName(username);

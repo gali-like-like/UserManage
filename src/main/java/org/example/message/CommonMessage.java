@@ -11,4 +11,5 @@ public class CommonMessage {
     public static String RESET_PASSWORD_SUCCESS = "重置密码成功";
     public static String DELETE_USER_SUCCESS = "成功删除用户";
     public static String PARAM_NOT_NULL = "请先选择对应用户！再继续操作！";
+    public static String JWT_ERROR = "身份验证失败,请重新登录";
 }
