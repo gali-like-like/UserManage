@@ -95,5 +95,8 @@
     <select id="getUserRoleByUsername" resultType="java.lang.Integer">
         SELECT user_role.id FROM users JOIN user_role ON users.user_role = user_role.id WHERE users.username = #{username};
     </select>
+    <select id="getUserHeaderByUsername" resultType="java.lang.String">
+        select image from users where username = #{username} and is_delete = 0;
+    </select>
 
 </mapper>

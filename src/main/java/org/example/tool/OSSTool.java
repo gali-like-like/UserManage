@@ -69,12 +69,13 @@ public class OSSTool {
     }
 
     public static String getAccessUrl(String objectPath) throws ClientException {
+
         // 以华东1（杭州）的外网Endpoint为例，其它Region请按实际情况填写。
         String endpoint = "https://oss-cn-beijing.aliyuncs.com";
         // 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
         EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
         // 填写Bucket名称，例如examplebucket。
-        String bucketName = "itst";
+        String bucketName = "user-headers";
         // 填写Object完整路径，例如exampleobject.txt。Object完整路径中不能包含Bucket名称。
 
         // 创建OSSClient实例。
@@ -83,12 +84,13 @@ public class OSSTool {
         URL signedUrl = null;
         try {
             // 指定生成的签名URL过期时间，单位为毫秒。本示例以设置过期时间为1小时为例。
-            Instant timestrampNow = Instant.now();
-            Date expiration = new Date(timestrampNow.getEpochSecond()*1000 + 3600 * 1000L);
+            Date expiration = new Date(System.currentTimeMillis() + 3600 * 1000L);
+
             // 生成签名URL。
             GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, objectPath, HttpMethod.GET);
             // 设置过期时间。
             request.setExpiration(expiration);
+
             // 通过HTTP GET请求生成签名URL。
             signedUrl = ossClient.generatePresignedUrl(request);
             // 打印签名URL。
@@ -101,14 +103,7 @@ public class OSSTool {
             System.out.println("Error Code:" + oe.getErrorCode());
             System.out.println("Request ID:" + oe.getRequestId());
             System.out.println("Host ID:" + oe.getHostId());
-            return null;
-        } catch (com.aliyun.oss.ClientException ce) {
-            System.out.println("Caught an ClientException, which means the client encountered "
-                    + "a serious internal problem while trying to communicate with OSS, "
-                    + "such as not being able to access the network.");
-            System.out.println("Error Message:" + ce.getMessage());
-            return null;
+            return "";
         }
     }
-
 }

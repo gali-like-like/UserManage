@@ -24,4 +24,6 @@ public interface UserMapper extends BaseMapper<User> {
     void deleteBatchUsers(List<String> usernames);
     //批量重置密码
     void resetBatchUsers(List<String> usernames);
+
+    String getUserHeaderByUsername(String username);
 }

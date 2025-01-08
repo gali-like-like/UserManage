@@ -54,7 +54,13 @@ public class UserService {
         Page<User> pageUsers = new Page<>(userPageDTO.getPage(), userPageDTO.getPageSize());
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("id");
-        List<UserVo> userVos =  userMapper.selectPage(pageUsers,queryWrapper).getRecords().parallelStream().map(item -> userConversion.userVoFromUser(item)).collect(Collectors.toList());
+        List<UserVo> userVos =  userMapper.selectPage(pageUsers,queryWrapper).getRecords().parallelStream().map(item -> {
+            try {
+                return userConversion.userVoFromUser(item);
+            } catch (ClientException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
         Page<UserVo> userVoPage = new Page<>(pageUsers.getCurrent(),pageUsers.getSize(),pageUsers.getTotal());
         userVoPage.setRecords(userVos);
         return userVoPage;
@@ -73,19 +79,30 @@ public class UserService {
         return CommonMessage.RESET_PASSWORD_SUCCESS;
     }
 
+    public String getUserHeaderByUsername(String username) throws DataAccessException, ClientException {
+        String ossPath = userMapper.getUserHeaderByUsername(username);
+        if (Objects.isNull(ossPath)) {
+            return ossPath;
+        }
+        String userHeaderUrl = OSSTool.getAccessUrl(ossPath);
+        return userHeaderUrl;
+    }
+
+
     public User getUserById(Integer id) throws DataAccessException {
         return userMapper.selectById(id);
     };
 
-    public UserVo getUserVoByUsername(String username) throws DataAccessException {
+    public UserVo getUserVoByUsername(String username) throws DataAccessException, ClientException {
+        log.info("server username:{}",username);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("is_delete", false)
-                .and(wrapper -> wrapper.gt("username", username));
+                .and(wrapper -> wrapper.eq("username", username));
         User user = userMapper.selectOne(queryWrapper);
         return userConversion.userVoFromUser(user);
     }
     //加油
-    public List<UserVo> getUsers() {
+    public List<UserVo> getUsers() throws ClientException {
         List<User> users = userMapper.selectList(null);
         log.info("users:{}",users);
         List<UserVo> userVos = new ArrayList<>();
@@ -150,7 +167,11 @@ public class UserService {
         Integer userTotal = userMapper.totalByCondition(userConditionDTO);
         List<User> users = userMapper.pageByCondition(userConditionDTO);
         List<UserVo> userVos = users.stream().map((item) -> {
-            return userConversion.userVoFromUser(item);
+            try {
+                return userConversion.userVoFromUser(item);
+            } catch (ClientException e) {
+                throw new RuntimeException(e);
+            }
         }).collect(Collectors.toList());
 //      分别设置总记录数和当前记录详情
         page.setTotal(userTotal);

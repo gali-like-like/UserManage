@@ -20,6 +20,7 @@ import org.example.tool.SMSTool;
 import org.example.vo.UserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.validation.annotation.Validated;
@@ -55,7 +56,7 @@ public class UserController {
     @Cacheable(cacheNames = "user",key="#username",unless = "#username == null")
     @Operation(summary = "根据账号查询员工")
     @RoleLimit(roleLevel = {1,2})
-    public Result findUserByUsername(@Validated @NotNull(message = "用户账号不能为空") @PathVariable String username) {
+    public Result findUserByUsername(@Validated @NotNull(message = "用户账号不能为空") @PathVariable String username) throws ClientException {
         UserVo user = userService.getUserVoByUsername(username);
         return Result.success(user);
     }
@@ -134,6 +135,15 @@ public class UserController {
         else
             return Result.success(CommonMessage.LOGIN_SUCCESS,jwtOrDesc);
     }
+    //根据账号获取用户头像
+    @GetMapping("/user/get_header")
+    @Operation(summary = "获取用户头像")
+    @Cacheable(cacheNames = "userHeader",key="#username",unless = "#username == null")
+    @RoleLimit(roleLevel = {1,2})
+    public Result getUserHeaderByUsername(@RequestParam(name = "username") String username) throws ClientException {
+        String userHeader = userService.getUserHeaderByUsername(username);
+        return Result.success(userHeader);
+    }
 
     @PutMapping("/logout")
     @Operation(summary = "注销员工")
@@ -185,7 +195,7 @@ public class UserController {
 
     @PostMapping("/get_all")
     @Operation(summary = "获取用户数据")
-    public Result getUsers() {
+    public Result getUsers() throws ClientException {
         List<UserVo> userVos = userService.getUsers();
         return Result.success(userVos);
     }
